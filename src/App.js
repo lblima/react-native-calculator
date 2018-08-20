@@ -22,14 +22,17 @@ export default class App extends Component {
 
     this.initalState = {
       displayValue: '0',
-      operator: null
+      operator: null,
+      firstValue: '',
+      secondValue: '',
+      hasNextValue: false
     }
     
     this.state = this.initalState;
   }
 
   onButtonPress(value) {
-    const { displayValue, operator } = this.state;
+    const { displayValue, operator, hasNextValue, firstValue, secondValue } = this.state;
 
     switch (value) {
       case '0':
@@ -43,18 +46,37 @@ export default class App extends Component {
       case '8':
       case '9':
         this.setState({
-          operator: null,
           displayValue: displayValue === '0' ? value : displayValue + value
         });
+
+        if (hasNextValue) 
+          this.setState({ secondValue: secondValue + value });
+        else
+          this.setState({ firstValue: firstValue + value });
+
         break;
       case '-':
       case '+':
       case '/':
       case 'x':
-        this.setState({
-          operator: value,
-          displayValue: (operator !== null ? displayValue.substr(0, displayValue.length - 1) : displayValue) + value
-        });
+        if (hasNextValue) {
+          let result = eval(firstValue + operator + secondValue);
+
+          this.setState({
+            displayValue: result.toString() + value,
+            firstValue: result,
+            secondValue: '',
+            operator: value === 'x' ? '*' : value
+          });
+        }
+        else {
+          this.setState({
+            operator: value === 'x' ? '*' : value,
+            hasNextValue: true,
+            displayValue: (operator !== null ? displayValue.substr(0, displayValue.length - 1) : displayValue) + value
+          });
+        }
+        
         break;
       case '.':
         let dot = displayValue.slice(-1);
@@ -63,6 +85,38 @@ export default class App extends Component {
           operator: null,
           displayValue: dot !== '.' ? displayValue + value : displayValue
         });
+
+        if (hasNextValue) 
+          this.setState({ secondValue: secondValue + value });
+        else
+          this.setState({ firstValue: firstValue + value });
+
+        break;
+      case 'CLEAR':
+        this.setState(this.initalState);
+        break;
+      case 'DEL':
+        let deleteString = displayValue.toString().substr(0, displayValue.length - 1);
+
+        if (deleteString === '')
+          deleteString = '0';
+
+        this.setState({
+            displayValue: deleteString
+        });
+
+        break;
+      case '=':
+        let result = eval(firstValue + operator + secondValue);
+
+        this.setState({
+          displayValue: result,
+          firstValue: '',
+          secondValue: '',
+          hasNextValue: false,
+          operator: null
+        });
+
         break;
     }   
   }
