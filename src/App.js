@@ -17,10 +17,64 @@ const buttonsLayout = [
 ];
 
 export default class App extends Component {
+  constructor() {
+    super();
+
+    this.initalState = {
+      displayValue: '0',
+      operator: null
+    }
+    
+    this.state = this.initalState;
+  }
+
+  onButtonPress(value) {
+    const { displayValue, operator } = this.state;
+
+    switch (value) {
+      case '0':
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9':
+        this.setState({
+          operator: null,
+          displayValue: displayValue === '0' ? value : displayValue + value
+        });
+        break;
+      case '-':
+      case '+':
+      case '/':
+      case 'x':
+        this.setState({
+          operator: value,
+          displayValue: (operator !== null ? displayValue.substr(0, displayValue.length - 1) : displayValue) + value
+        });
+        break;
+      case '.':
+        let dot = displayValue.slice(-1);
+
+        this.setState({
+          operator: null,
+          displayValue: dot !== '.' ? displayValue + value : displayValue
+        });
+        break;
+    }   
+  }
+
   renderButtons() {
     let layouts = buttonsLayout.map((buttonRow, index) => {
       let rowItem = buttonRow.map((buttonItem, buttonIndex) => {
-        return <InputNumber key={'btn-' + buttonIndex} value={buttonItem} />
+        return <InputNumber 
+                    key={'btn-' + buttonIndex} 
+                    value={buttonItem} 
+                    onButtonPress={this.onButtonPress.bind(this, buttonItem)} 
+                />
       });
 
       return <View style={styles.inputRow} key={'row-' + index}>{rowItem}</View>
@@ -38,7 +92,7 @@ export default class App extends Component {
     return (
       <View style={container}>
         <View style={resultContainer}>
-          <Text style={resultText}>{0}</Text>
+          <Text style={resultText}>{this.state.displayValue}</Text>
         </View>
 
         <View style={inputContainer}>
@@ -64,7 +118,7 @@ const styles = StyleSheet.create({
   },
   resultText: {
     color: 'white',
-    fontSize: 80,
+    fontSize: 65,
     fontWeight: 'bold',
     padding: 20,
     textAlign: 'right'
